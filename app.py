@@ -1,21 +1,55 @@
-from Matrix.Matrix import Matrix
+import json
+from random import randint
 
-a = Matrix(2, 2)
-arr = [[4,2], [1,3]]
-b = Matrix.from_array(arr)
+from neuralNetwork import MLP
 
-a.add(2)
-a.scale(3)
-a.minus(b)
-a.minus(1)
+data = [
+    {
+        'inputs': [1, 0],
+        'target': [1]
+    },
+    {
+        'inputs': [0, 1],
+        'target': [1]
+    },
+    {
+        'inputs': [1, 1],
+        'target': [0]
+    },
+    {
+        'inputs': [0, 0],
+        'target': [0]
+    }
+]
 
-at = a.transpose()
-ac = a.copy()
 
-print(b.data)
-print(a.data)
-at.print()
-ac.print()
+def save_data(mlp: MLP, path: str):
+    file = open(path, 'w')
+    data = mlp.serialise()
+    file.write(data)
+    file.close()
 
-c = Matrix.multiply(a, b)
-c.print()
+
+def load(path: str) -> MLP:
+    file = open(path, 'r')
+    data = file.read()
+    json_data = json.loads(data)
+    file.close()
+
+    return MLP.deserialise(json_data)
+
+
+brain = 'mlp.json'
+
+mlp = MLP(2, [4, 2, 4], 1)
+
+for i in range(100000):
+    training_data = data[randint(0, len(data) - 1)]
+    mlp.train(training_data['inputs'], training_data['target'])
+
+print(mlp.predict(data[0]['inputs']))
+print(mlp.predict(data[1]['inputs']))
+print(mlp.predict(data[2]['inputs']))
+print(mlp.predict(data[3]['inputs']))
+
+save_data(mlp, brain)
